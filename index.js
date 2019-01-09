@@ -3,9 +3,15 @@
 const express = require('express');
 const db = require('./data/db.js');
 const server = express();
+/*
+server.use(express.urlencoded({
+	extended: true
+}));
+*/
+server.use(express.json());
 
 // add your server code starting here
-server.listen(5000, () => console.log('test'));
+server.listen(5000, () => console.log('server running'));
 
 /*
 server.get('/', (req, res) => {
@@ -77,7 +83,8 @@ return the following JSON object: { error: "There was an error while saving the 
 */
 
 server.post('/api/posts', (req, res) => {
-	if(req.body.title === null || req.body.contents === null || req.body.title === '' || req.body.contents === ''){
+	console.log(req.body);
+	if(req.body.title === undefined || req.body.contents === undefined || req.body.title === '' || req.body.contents === ''){
 		res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
 	}else{
 		db.insert({title: req.body.title, contents: req.body.contents})
@@ -104,10 +111,12 @@ respond with HTTP status code 500.
 return the following JSON object: { error: "The post could not be removed" }.
  */
 
-server.delete('/api/posts/id', (req, res) => {
+server.delete('/api/posts/:id', (req, res) => {
 	const id = req.params.id;
+	console.log(id);
 	db.findById(id)
 	  .then(posts => {
+	  	console.log(posts);
 	  	if (posts.length > 0) {
 	  		db.remove(id)
 	  		.then(numberOfPostsRemoved => {
@@ -153,12 +162,12 @@ return HTTP status code 200 (OK).
 return the newly updated post.
  */
 
-server.put('/api/posts/id', (req, res) => {
+server.put('/api/posts/:id', (req, res) => {
 	const id = req.params.id;
 	db.findById(id)
 	  .then(posts => {
 	  	if (posts.length > 0) {
-	  		if(req.body.title === null || req.body.contents === null || req.body.title === '' || req.body.contents === ''){
+	  		if(req.body.title === '' || req.body.contents === ''){
 				res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
 			}else{
 				posts[0].title = req.body.title;
